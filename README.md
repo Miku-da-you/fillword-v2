@@ -1,135 +1,135 @@
 # Fillword Party
 
-> A realtime party game project with three modes: `Fillword`, `Turtle Soup`, and `Ghost Story`.
+> 一个支持多人实时联机的派对游戏项目，包含 `Fillword`、`海龟汤`、`恐怖怪谈` 三种玩法。
 
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-realtime-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Status](https://img.shields.io/badge/status-active-2ea44f)](https://github.com/Miku-da-you/fillword-v2)
 [![Deploy](https://img.shields.io/badge/deploy-PM2%20%2B%20Nginx-blue)](./docs/deployment/fillword-jdcloud.md)
 
-Fillword Party is a browser-based multiplayer game hub built for small groups and party sessions. One project, one room flow, three game styles:
+Fillword Party 是一个面向小型聚会、朋友局和轻推理场景的浏览器多人游戏项目。整个项目围绕“统一入口 + 房间号加入 + 多模式共存”来设计，目前已经实现三种核心玩法：
 
-- `Fillword`: players fill distributed prompts and the host generates a final combined result.
-- `Turtle Soup`: players ask free-form yes/no questions and try to solve a lateral-thinking mystery.
-- `Ghost Story`: players read chapters, answer questions, and unlock different endings.
+- `Fillword`：多人分工填词，由房主汇总并生成最终结果
+- `海龟汤`：玩家自由提问，主持人按 `是 / 否 / 接近 / 无关` 裁决并推进推理
+- `恐怖怪谈`：玩家阅读章节、回答问题，并根据表现解锁不同结局
 
-Online entry:
+在线入口：
 
-- App: [http://117.72.205.240/fillword/app.html](http://117.72.205.240/fillword/app.html)
-- Health check: [http://117.72.205.240/healthz](http://117.72.205.240/healthz)
+- 游戏主页：[http://117.72.205.240/fillword/app.html](http://117.72.205.240/fillword/app.html)
+- 健康检查：[http://117.72.205.240/healthz](http://117.72.205.240/healthz)
 
-## Highlights
+## 项目亮点
 
-- Unified mobile-first app entry for host and players
-- Realtime room sync powered by `Socket.IO`
-- Multiple game modes sharing one room code experience
-- AI-assisted `Turtle Soup` moderation with rule-based fallback
-- AI-assisted `Ghost Story` narration with deterministic progression
-- PM2 + Nginx deployment flow for a single Linux server
-- Repository cleaned for open source: no server password or AI API key stored in source
+- 统一的移动端优先入口，房主和玩家共用一套进入流程
+- 基于 `Socket.IO` 的实时房间同步
+- 一个项目内承载三种不同风格的派对玩法
+- `海龟汤` 支持 AI 主持 + 规则兜底
+- `恐怖怪谈` 支持 AI 旁白增强 + 确定性流程控制
+- 支持 `PM2 + Nginx` 单机部署
+- 已完成开源清理，仓库内不包含服务器密码和 AI 密钥
 
-## Game Modes
+## 玩法说明
 
 ### 1. Fillword
 
-This is the original collaborative word-filling party mode.
+这是项目最早的协作填词模式，适合快节奏朋友局。
 
-- The host creates a room and chooses a template.
-- Each player receives different prompt fields.
-- Players submit their answers independently.
-- Once everyone is done, the host generates a combined result script.
+- 房主创建房间并选择模板
+- 每位玩家拿到不同的填写字段
+- 玩家分别提交自己的答案
+- 全员完成后，由房主一键生成最终结果文案
 
-Best for:
+适合场景：
 
-- quick party rounds
-- funny collaborative writing
-- improv-style social games
+- 朋友聚会破冰
+- 轻松搞笑的多人协作
+- 即兴创作类小游戏
 
-### 2. Turtle Soup
+### 2. 海龟汤
 
-This mode turns the app into a hosted lateral-thinking mystery game.
+这是一个偏推理和问答主持的模式。
 
-- The host chooses a case pack and starts the room.
-- Players freely ask natural-language questions.
-- The moderator answers with `yes`, `no`, `close`, or `irrelevant`.
-- Obvious off-topic questions are blocked before they derail the round.
-- Strong keyword matches are resolved deterministically before AI is consulted.
+- 房主先选择题包并开局
+- 玩家使用自然语言自由提问
+- 主持系统返回 `是 / 否 / 接近 / 无关`
+- 跑题问题会被优先拦截，避免整局节奏被带偏
+- 明显命中题面线索的问题会优先走规则裁决，减少 AI 波动
 
-Recent moderation improvements:
+当前主持策略特点：
 
-- unrelated chat like `Can you sing?` is rejected as `irrelevant`
-- answer-fishing meta questions are blocked
-- clear clue-matching questions are answered through rule-first adjudication
-- AI remains available for flexible judging when the question is relevant but not an exact rule hit
+- 明显无关的问题会直接判为 `irrelevant`
+- 试图直接套答案、问规则、闲聊的内容会被拦下
+- 明确命中关键词的问题优先由规则裁决
+- 其余相关但不够精确的问题，仍然交给 AI 增强判断
 
-### 3. Ghost Story
+### 3. 恐怖怪谈
 
-This mode is a chapter-based horror reasoning experience.
+这是一个章节式、带结局分支的阅读推理模式。
 
-- The host selects a story pack.
-- Players read scene text and answer chapter questions.
-- Correctness affects survival, progression, and endings.
-- AI narration can enrich intros and endings while the game logic remains deterministic.
+- 房主选择故事包
+- 玩家阅读当前章节并回答题目
+- 正确率会影响后续推进与结局
+- AI 可用于强化开场旁白和结尾氛围，但核心逻辑仍然是可控的
 
-Best for:
+适合场景：
 
-- atmospheric group play
-- short branching story sessions
-- rule-horror and puzzle storytelling
+- 氛围型聚会
+- 多人短篇规则怪谈体验
+- 轻量剧情推理解谜
 
-## Tech Stack
+## 技术栈
 
-- Frontend: vanilla HTML, CSS, JavaScript
-- Backend: Node.js, Express, Socket.IO
-- Process management: PM2
-- Reverse proxy: Nginx
-- AI integration: Spark HTTP chat completions API
-- Tests: Node built-in test runner
+- 前端：原生 HTML / CSS / JavaScript
+- 后端：Node.js、Express、Socket.IO
+- 进程管理：PM2
+- 反向代理：Nginx
+- AI 接入：Spark HTTP Chat Completions API
+- 测试：Node.js 内置测试运行器
 
-## Quick Start
+## 快速开始
 
-### Requirements
+### 环境要求
 
 - Node.js `16+`
 - npm
 
-### Install
+### 安装依赖
 
 ```bash
 cd server
 npm install
 ```
 
-### Run locally
+### 本地启动
 
 ```bash
 cd server
 npm start
 ```
 
-Then open:
+启动后访问：
 
 - `http://127.0.0.1:3000/fillword/app.html`
 
-### Development mode
+### 开发模式
 
 ```bash
 cd server
 npm run dev
 ```
 
-### Run tests
+### 运行测试
 
 ```bash
 cd server
 npm test
 ```
 
-## Environment Variables
+## 环境变量
 
-AI and deployment secrets are intentionally not committed to the repository.
+仓库中不会提交任何真实密钥或服务器口令。
 
-Use [.env.example](./.env.example) as a reference for deployment-side values:
+部署相关环境变量可以参考 [.env.example](./.env.example)：
 
 ```env
 FILLWORD_SSH_HOST=example.com
@@ -141,31 +141,31 @@ FILLWORD_LOCAL_ARCHIVE=C:\path\to\fillword-deploy.tar.gz
 FILLWORD_REMOTE_ARCHIVE=/root/fillword-deploy.tar.gz
 ```
 
-For AI features, the server expects environment variables such as:
+AI 相关环境变量主要包括：
 
 - `SPARK_API_PASSWORD`
 - `SPARK_MODEL`
 - `SPARK_API_BASE_URL`
 - `SPARK_TIMEOUT_MS`
 
-Detailed AI setup:
+详细说明见：
 
 - [docs/deployment/fillword-ai-config.md](./docs/deployment/fillword-ai-config.md)
 - [docs/deployment/fillword-spark-model-name.md](./docs/deployment/fillword-spark-model-name.md)
 
-## Deployment
+## 部署说明
 
-The current deployment target is a Linux server using PM2 and Nginx.
+当前项目采用 Linux 单机部署，使用 `PM2 + Nginx`。
 
-High-level flow:
+高层流程如下：
 
-1. Package the project
-2. Upload it to the server
-3. Run `server/deploy.sh`
-4. Restart PM2
-5. Verify `/healthz` and `/fillword/app.html`
+1. 打包项目文件
+2. 上传到服务器
+3. 执行 `server/deploy.sh`
+4. 重启 PM2 进程
+5. 校验 `/healthz` 与 `/fillword/app.html`
 
-Relevant files:
+相关文件：
 
 - [server/deploy.sh](./server/deploy.sh)
 - [server/restore.sh](./server/restore.sh)
@@ -173,74 +173,75 @@ Relevant files:
 - [docs/deployment/fillword-jdcloud.md](./docs/deployment/fillword-jdcloud.md)
 - [docs/deployment/fillword-backup-restore.md](./docs/deployment/fillword-backup-restore.md)
 
-Helper scripts in the repo now read SSH credentials from environment variables instead of hardcoded secrets:
+仓库中的辅助部署脚本已经改为从环境变量读取 SSH 信息，不再在源码里写死敏感数据：
 
 - [deploy_remote_fillword.py](./deploy_remote_fillword.py)
 - [deploy_fix_remote.py](./deploy_fix_remote.py)
 - [cutover_fillword.py](./cutover_fillword.py)
 
-## Project Structure
+## 目录结构
 
 ```text
 fillword_v2/
-|- public/                 # Unified frontend entry and browser assets
+|- public/                 # 前端统一入口与静态资源
 |  |- app.html
 |  |- scripts/
-|  |  |- pages/
-|  |  |- renderers/
-|  |  `- shared/
+|  |  |- pages/            # 页面逻辑
+|  |  |- renderers/        # 各模式渲染器
+|  |  `- shared/           # 共享前端工具
 |  `- styles/
-|- server/                 # Express + Socket.IO backend
-|  |- turtle-soup/         # Turtle Soup game logic
-|  |- ghost-story/         # Ghost Story game logic
-|  |- integrations/        # Spark client
-|  |- tests/               # Automated tests
+|- server/                 # Express + Socket.IO 服务端
+|  |- turtle-soup/         # 海龟汤相关逻辑
+|  |- ghost-story/         # 恐怖怪谈相关逻辑
+|  |- integrations/        # AI / 外部服务接入
+|  |- tests/               # 自动化测试
 |  `- server.js
-|- docs/                   # Deployment notes, handover docs, specs
-|- dist/                   # Built/static deployment artifacts
-|- _rollback_1_0/          # Clean baseline snapshot from an earlier version
-`- .env.example            # Safe env template
+|- docs/                   # 部署文档、交接文档、设计文档
+|- dist/                   # 部署用静态产物
+|- _rollback_1_0/          # 早期稳定版本回滚快照
+`- .env.example            # 安全的环境变量示例
 ```
 
-## Realtime Flow
+## 实时流程
 
-At a high level, the app works like this:
+项目的核心实时链路大致如下：
 
-1. The host creates a room from the unified app entry.
-2. The backend creates a room in the matching mode manager.
-3. Players join using the same room code flow.
-4. Socket events broadcast room state changes to each connected client.
-5. Mode-specific renderers update the UI based on role, state, and result.
+1. 房主从统一入口创建房间
+2. 后端根据模式把房间交给对应的 manager 管理
+3. 玩家通过房间号加入同一局
+4. `Socket.IO` 广播房间状态变化
+5. 前端根据身份、模式和状态切换不同渲染内容
 
-The main server entry is [server/server.js](./server/server.js).
+主入口文件位于 [server/server.js](./server/server.js)。
 
-## Current Status
+## 当前状态
 
-What is already in place:
+目前已经具备：
 
-- unified app entry is live
-- Fillword room flow is working
-- Turtle Soup includes AI moderation plus rule fallback
-- Ghost Story includes chapter progression and ending resolution
-- automated backend and contract tests are in place
-- public GitHub repository is live and secrets have been scrubbed
+- 统一游戏入口
+- Fillword 房间流程可用
+- 海龟汤主持逻辑可用，并带 AI + 规则双保险
+- 恐怖怪谈章节推进与结局逻辑可用
+- 后端与前端契约测试已覆盖
+- 仓库已公开，且完成敏感信息清理
 
-## Security Notes
+## 安全说明
 
-- No server password is stored in this repository
-- No AI API key is stored in this repository
-- Deployment helpers now require environment-provided credentials
-- Spark credentials should be injected on the server, not committed to source
+- 仓库中不保存服务器密码
+- 仓库中不保存 AI API key
+- 部署脚本已改为依赖环境变量注入凭据
+- Spark 相关密钥应只存在于服务器环境中，不应进入版本库
 
-If you fork this project, keep all secrets in your own environment or secret manager.
+如果你 fork 这个项目，请继续保持这一约束。
 
-## Repository Links
+## 仓库与线上地址
 
-- GitHub: [https://github.com/Miku-da-you/fillword-v2](https://github.com/Miku-da-you/fillword-v2)
-- Live app: [http://117.72.205.240/fillword/app.html](http://117.72.205.240/fillword/app.html)
+- GitHub 仓库：[https://github.com/Miku-da-you/fillword-v2](https://github.com/Miku-da-you/fillword-v2)
+- 在线版本：[http://117.72.205.240/fillword/app.html](http://117.72.205.240/fillword/app.html)
 
-## Notes
+## 备注
 
-- The production server currently runs on Node.js 16.
-- PM2 may emit engine warnings on install, but the current deployment is still operational.
-- This repo does not currently include a dedicated open-source `LICENSE` file.
+- 当前线上环境仍然是 Node.js 16
+- 安装 PM2 时可能看到 engine warning，但目前部署仍可正常运行
+- 仓库暂时还没有单独提供 `LICENSE` 文件
+
