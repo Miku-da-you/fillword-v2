@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>填词大作战</title>
+<link rel="stylesheet" href="styles/global.css">
+<style>
+.landing { text-align: center; padding: 40px 20px; }
+.landing h1 { font-size: 32px; color: var(--accent-light); margin-bottom: 8px; }
+.landing p { font-size: 14px; color: var(--text-secondary); margin-bottom: 40px; }
+.landing .btn-choose { display: block; width: 100%; padding: 20px; margin-bottom: 16px; font-size: 17px; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; border: none; font-weight: bold; }
+.landing .btn-host { background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: #fff; }
+.landing .btn-player { background: var(--bg-secondary); color: #fff; border: 2px solid var(--accent); }
+.landing .btn-choose:hover { transform: scale(1.03); }
+.landing .btn-choose:active { transform: scale(0.98); }
+.landing .tips { background: var(--bg-secondary); border-radius: var(--radius); padding: 20px; margin-top: 20px; text-align: left; }
+.landing .tips h3 { font-size: 14px; color: var(--accent-light); margin-bottom: 12px; }
+.landing .tips li { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page active page-enter">
+  <div style="text-align:center;padding-top:40px">
+    <div style="font-size:48px;margin-bottom:16px">🎭</div>
+    <h1 style="font-size:28px;color:var(--accent-light);margin-bottom:8px">填词大作战</h1>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:40px">多人派对填词游戏 · 聚会神器</p>
+  </div>
+  
+  <div style="padding:0 20px">
+    <button class="btn-choose btn-host" onclick="location.href='/fillword/host'">
+      🎤 我来创建房间（主持人）
+    </button>
+    <button class="btn-choose btn-player" onclick="location.href='/fillword/player'">
+      🎮 我来填词（玩家）
+    </button>
+  </div>
+  
+  <div class="tips">
+    <h3>🎯 游戏说明</h3>
+    <ul>
+      <li><b>主持人</b>选择一个剧本模板，生成4位房间号</li>
+      <li>把房间号发给朋友，朋友用手机进入填词</li>
+      <li>所有人填完后，主持人点"生成剧本"</li>
+      <li>每个人都能看到一段离谱的完整剧本 😆</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

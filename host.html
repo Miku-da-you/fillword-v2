@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>填词大作战 - 主持人端</title>
+<link rel="stylesheet" href="styles/global.css">
+<style>
+/* Host 专属样式 */
+.page-waiting .room-display {
+  text-align: center;
+  padding: 10px 0;
+}
+.room-number-large {
+  font-size: 56px;
+  font-weight: bold;
+  color: var(--gold);
+  letter-spacing: 12px;
+  text-shadow: 0 0 20px rgba(255, 217, 61, 0.3);
+  margin: 16px 0;
+}
+.room-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.player-count-bar {
+  background: var(--bg-input);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.player-count-bar .count {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--accent-light);
+}
+.player-count-bar .label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.generate-section {
+  margin-top: 20px;
+}
+.generate-section .btn {
+  font-size: 17px;
+  padding: 16px;
+}
+
+/* 结果页 */
+.result-page .result-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.result-page .result-header .template-badge {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 4px 14px;
+  margin-bottom: 10px;
+}
+.result-page .result-header h2 {
+  font-size: 20px;
+  color: var(--gold);
+}
+.result-page .players-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.result-page .players-tags span {
+  background: var(--bg-input);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+</style>
+</head>
+<body>
+
+<!-- 首页：选择模板 -->
+<div id="page-home" class="page active page-enter">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>填词大作战</h1>
+    <p class="subtitle">创建房间 · 邀请朋友 · 生成离谱剧本</p>
+  </div>
+  
+  <div class="card">
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">选择一个剧本模板开始游戏：</p>
+    <div class="template-grid" id="templateList"></div>
+  </div>
+  
+  <div class="card" style="background:transparent;border:none;padding:10px 0">
+    <p style="font-size:12px;color:#555;text-align:center">
+      💡 主持人在这里创建房间，然后把房间号发给朋友
+    </p>
+  </div>
+</div>
+
+<!-- 等待室 -->
+<div id="page-waiting" class="page">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>房间已创建</h1>
+    <p class="subtitle">等待玩家加入...</p>
+  </div>
+  
+  <div class="card page-waiting">
+    <div class="room-display">
+      <p style="font-size:13px;color:var(--text-secondary)">房间号</p>
+      <div class="room-number-large" id="displayRoomCode">----</div>
+      <p class="room-meta">把房间号发给朋友，或让他们扫码加入</p>
+    </div>
+    
+    <div class="player-count-bar">
+      <div>
+        <div class="count" id="playerCountNum">0</div>
+        <div class="label">人已加入</div>
+      </div>
+      <div style="text-align:right">
+        <div class="count" id="submittedCountNum">0</div>
+        <div class="label">人已提交</div>
+      </div>
+    </div>
+    
+    <div id="playerList" style="margin-bottom:8px"></div>
+    
+    <div class="generate-section">
+      <button class="btn btn-primary" id="generateBtn" onclick="handleGenerate()" disabled>
+        等待玩家提交答案...
+      </button>
+    </div>
+    
+    <button class="btn btn-ghost" onclick="cancelRoom()" style="margin-top:12px; text-align:center">
+      取消房间
+    </button>
+  </div>
+</div>
+
+<!-- 结果页 -->
+<div id="page-result" class="page result-page">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>剧本生成完成</h1>
+  </div>
+  
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span class="template-badge" id="resultTemplateName">剧本名称</span>
+      <h2 id="resultTitle">完整剧本</h2>
+    </div>
+    <div class="result-script" id="resultScript"></div>
+    <div class="players-tags" id="resultPlayers"></div>
+  </div>
+  
+  <div class="share-row">
+    <button class="btn btn-secondary" onclick="shareImage()">📸 保存图片</button>
+    <button class="btn btn-primary" onclick="restartGame()">再来一局</button>
+  </div>
+</div>
+
+<!-- 开始 渢载 -->
+<div id="loading" style="position:fixed;inset:0;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">⏳</div>
+    <div style="font-size:14px;color:var(--text-secondary)">连接服务器中...</div>
+  </div>
+</div>
+
+<script src="scripts/socket-client.js"></script>
+<script src="scripts/templates.js"></script>
+<script>
+let currentTemplate;
+let unsubscribePlayers = null;
+let currentPlayers = [];
+// declared in socket-client.js
+
+// ============================================================
+// 页面控制
+// ============================================================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+window.addEventListener('DOMContentLoaded', async () => {
+  // 渲染模板列表
+  renderTemplateList();
+  
+  // 连接 Socket.IO
+  try {
+    await SocketSync.connect();
+    await Promise.resolve();
+    document.getElementById('loading').style.display = 'none';
+    console.log('Socket.IO 已连接');
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    console.warn('Connection failed:', e.message);
+  }
+});
+
+// ============================================================
+// 模板列表渲染
+// ============================================================
+function renderTemplateList() {
+  const container = document.getElementById('templateList');
+  container.innerHTML = TEMPLATES.map((t, i) => `
+    <div class="template-card" onclick="selectTemplate(${i})">
+      <span class="emoji">${t.emoji}</span>
+      <div class="name">${t.title}</div>
+      <div class="slots">${t.fields.length}个填空</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// 创建房间
+// ============================================================
+async function selectTemplate(index) {
+  currentTemplate = TEMPLATES[index];
+  
+  try {
+    // Socket.IO 模式
+    const result = await SocketSync.createRoom(index);
+    currentRoomId = result.roomId;
+    currentPlayerId = result.playerId;
+  } catch(e) {
+    // 降级到 localStorage 演示模式
+    console.warn('使用本地演示模式');
+    currentRoomId = generateFallbackRoomCode();
+    saveToLocalStorage(currentRoomId, index);
+  }
+  
+  // 更新UI
+  document.getElementById('displayRoomCode').textContent = currentRoomId;
+  document.getElementById('playerCountNum').textContent = '0';
+  document.getElementById('submittedCountNum').textContent = '0';
+  document.getElementById('playerList').innerHTML = '<div style="color:#555;font-size:13px;text-align:center;padding:20px">等待玩家加入...</div>';
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('generateBtn').textContent = '等待玩家加入...';
+  
+  showPage('waiting');
+  
+  // 开始监听玩家变化
+  startListening();
+}
+
+function startListening() {
+  if (unsubscribePlayers) unsubscribePlayers();
+  
+  try {
+    unsubscribePlayers = SocketSync.onPlayerJoined(data => updatePlayerList(data.players));
+    SocketSync.onPlayerSubmitted(data => updatePlayerList(data.players));
+    SocketSync.onPlayerLeft(data => updatePlayerList(data.players));
+  } catch(e) {
+    // 本地演示模式
+    startLocalPolling();
+  }
+}
+
+function updatePlayerList(players) {
+  currentPlayers = players;
+  const total = players.length;
+  const submitted = players.filter(p => p.submitted).length;
+  
+  document.getElementById('playerCountNum').textContent = total;
+  document.getElementById('submittedCountNum').textContent = submitted;
+  
+  if (total === 0) {
+    document.getElementById('playerList').innerHTML = 
+      '<div style="color:#555;font-size:13px;text-align:center;padding:20px">等待玩家加入...</div>';
+  } else {
+    document.getElementById('playerList').innerHTML = players.map(p => `
+      <div class="player-item">
+        <div class="info">
+          <div class="avatar">${p.name[0]}</div>
+          <span class="name">${escapeHtml(p.name)}</span>
+        </div>
+        <span class="badge ${p.submitted ? 'done' : 'waiting'}">
+          ${p.submitted ? '✓ 已提交' : '填词中...'}
+        </span>
+      </div>
+    `).join('');
+  }
+  
+  const btn = document.getElementById('generateBtn');
+  if (submitted > 0 && submitted === total) {
+    btn.disabled = false;
+    btn.textContent = '✨ 生成剧本';
+  } else if (total > 0) {
+    btn.disabled = true;
+    btn.textContent = submitted > 0 
+      ? `等待其他玩家... (${submitted}/${total})`
+      : '等待玩家提交...';
+  }
+}
+
+// ============================================================
+// 生成结果
+// ============================================================
+async function handleGenerate() {
+  if (!currentTemplate || currentPlayers.length === 0) return;
+  
+  const btn = document.getElementById('generateBtn');
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+  
+  // 合并所有答案
+  const allAnswers = {};
+  currentPlayers.forEach(p => {
+    if (p.answers) {
+      Object.assign(allAnswers, p.answers);
+    }
+  });
+  
+  // 填充剧本
+  let script = currentTemplate.script;
+  for (const [key, val] of Object.entries(allAnswers)) {
+    script = script.replace(new RegExp('\\{' + key + '\\}', 'g'), val);
+  }
+  
+  // 更新UI
+  document.getElementById('resultTemplateName').textContent = currentTemplate.title;
+  document.getElementById('resultScript').textContent = script;
+  document.getElementById('resultPlayers').innerHTML = currentPlayers.map(p => 
+    `<span>👤 ${escapeHtml(p.name)}</span>`
+  ).join('');
+  
+  try {
+    await SocketSync.generateResult(currentRoomId);
+  } catch(e) {
+    console.warn('Socket.IO 生成结枚失败:', e.message);
+  }
+  
+  showPage('result');
+}
+
+function restartGame() {
+  if (unsubscribePlayers) unsubscribePlayers();
+  currentRoomId = null;
+  currentTemplate = null;
+  currentPlayers = [];
+  showPage('home');
+}
+
+async function cancelRoom() {
+  if (currentRoomId) {
+    try {
+      SocketSync.disconnect();
+    } catch(e) {}
+  }
+  restartGame();
+}
+
+// ============================================================
+// 截图分享
+// ============================================================
+async function shareImage() {
+  try {
+    showToast('截图功能已禁用');
+    showToast('可以了');
+  } catch(e) {
+    showToast('这个功能已禁用');
+    console.error(e);
+  }
+}
+
+// ============================================================
+// 本地演示模式（降级方案）
+// ============================================================
+function saveToLocalStorage(roomId, templateIndex) {
+  localStorage.setItem('fw_room_' + roomId, JSON.stringify({
+    templateIndex,
+    status: 'waiting',
+    players: [],
+    createdAt: Date.now()
+  }));
+}
+
+function startLocalPolling() {
+  setInterval(() => {
+    const data = JSON.parse(localStorage.getItem('fw_room_' + currentRoomId) || '{}');
+    updatePlayerList(data.players || []);
+  }, 2000);
+}
+
+function generateFallbackRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+// ============================================================
+// 工具
+// ============================================================
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

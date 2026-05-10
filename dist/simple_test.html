@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<h1>Simple Test</h1>
+<input type="text" id="code1" value="A">
+<input type="text" id="code2" value="B">
+<input type="text" id="code3" value="C">
+<input type="text" id="code4" value="D">
+<input type="text" id="playerName" value="TestUser">
+<button onclick="test()">Click Me</button>
+<script>
+function test() {
+    var code = document.getElementById('code1').value + document.getElementById('code2').value + document.getElementById('code3').value + document.getElementById('code4').value;
+    var name = document.getElementById('playerName').value;
+    alert('Code: ' + code + ', Name: ' + name);
+}
+</script>
+</body>
+</html>

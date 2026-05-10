@@ -1,0 +1,60 @@
+.join-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.code-field {
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.field-group {
+  display: grid;
+  gap: 8px;
+}
+
+.textarea-field {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.field-hint {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.choice-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.choice-card {
+  border: 1px solid var(--border);
+  background: var(--bg-panel-strong);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.choice-card.is-selected {
+  border-color: var(--gold);
+  background: rgba(255, 216, 77, 0.12);
+  transform: translateY(-1px);
+}
+
+.wait-card {
+  text-align: center;
+  display: grid;
+  gap: 12px;
+}
+
+.spinner {
+  font-size: 40px;
+}
+
+.error-copy {
+  color: var(--danger);
+}

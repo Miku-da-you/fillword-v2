@@ -1,0 +1,233 @@
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.template-card {
+  border: 1px solid var(--border);
+  background: var(--bg-panel-strong);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.template-card.is-selected {
+  border-color: var(--gold);
+  background: rgba(255, 214, 82, 0.12);
+  transform: translateY(-1px);
+}
+
+.template-card .emoji {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.template-card .name {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(243, 246, 255, 0.9);
+}
+
+.template-card.is-selected .name {
+  color: rgba(255, 216, 77, 0.92);
+}
+
+.template-card .meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.mode-card .meta {
+  min-height: 36px;
+}
+
+.picker-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.selection-summary {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--bg-panel-strong);
+}
+
+.room-code {
+  font-size: clamp(42px, 16vw, 84px);
+  line-height: 0.95;
+  letter-spacing: 0.16em;
+  font-weight: 900;
+  color: var(--gold);
+  text-align: center;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat-box {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--bg-panel-strong);
+  border: 1px solid var(--border);
+}
+
+.stat-box strong {
+  display: block;
+  font-size: 28px;
+}
+
+.stat-box span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.player-list {
+  display: grid;
+  gap: 10px;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-strong);
+  border: 1px solid var(--border);
+}
+
+.player-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.player-item strong {
+  font-size: 14px;
+}
+
+.player-meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.badge.done {
+  background: rgba(79, 208, 139, 0.16);
+  color: var(--success);
+}
+
+.badge.waiting {
+  background: rgba(255, 191, 91, 0.16);
+  color: var(--warning);
+}
+
+.ghost-rules-panel {
+  background: linear-gradient(180deg, rgba(141, 121, 255, 0.1), rgba(30, 33, 48, 0.96));
+}
+
+.ghost-rules-panel summary {
+  cursor: pointer;
+  color: var(--ghost-story-strong);
+}
+
+.ghost-chapter-card {
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid rgba(141, 121, 255, 0.28);
+  background: linear-gradient(180deg, rgba(141, 121, 255, 0.12), rgba(30, 33, 48, 0.94));
+  color: var(--text-primary);
+}
+
+.ghost-chapter-card strong {
+  color: var(--ghost-story-strong);
+}
+
+.ghost-clue-card {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid rgba(255, 216, 77, 0.18);
+  background: rgba(255, 216, 77, 0.06);
+  color: rgba(255, 240, 196, 0.96);
+}
+
+.ghost-clue-card strong {
+  color: var(--gold);
+}
+
+.ghost-question-card {
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid rgba(141, 121, 255, 0.24);
+  background: rgba(15, 16, 20, 0.72);
+}
+
+.ghost-question-title {
+  color: var(--ghost-story-strong);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ghost-option-label {
+  color: rgba(224, 230, 255, 0.96);
+}
+
+.ghost-option-meta {
+  color: #c7d1ea;
+}
+
+.ghost-option-choice {
+  color: var(--gold);
+}
+
+.ghost-feedback-card {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid rgba(255, 107, 129, 0.22);
+  background: rgba(255, 107, 129, 0.08);
+}
+
+.ghost-feedback-card strong {
+  color: #ffd2da;
+}
+
+.ghost-feedback-reason {
+  color: rgba(255, 226, 232, 0.94);
+}
+
+.ghost-feedback-narration {
+  color: rgba(255, 213, 222, 0.9);
+}
+
+@media (min-width: 640px) {
+  .template-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .player-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

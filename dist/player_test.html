@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Player Test</title>
+</head>
+<body>
+<h1 id="status">Loading...</h1>
+<input type="text" id="code1" value="T">
+<input type="text" id="code2" value="E">
+<input type="text" id="code3" value="S">
+<input type="text" id="code4" value="T">
+<input type="text" id="playerName" value="TestBot">
+<script src="scripts/socket.io.min.js"></script>
+<script src="scripts/socket-client.js"></script>
+<script>
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+}
+
+function getRoomCode() {
+  return ['code1','code2','code3','code4'].map(id => document.getElementById(id).value).join('').toUpperCase();
+}
+
+window.onerror = function(msg, url, line, col, error) {
+  document.getElementById('status').textContent = 'ERROR: ' + msg + ' (line ' + line + ')';
+  return true;
+};
+
+document.getElementById('status').textContent = 'Scripts loaded, calling joinRoom...';
+setTimeout(async function() {
+  try {
+    var code = getRoomCode();
+    var name = document.getElementById('playerName').value;
+    document.getElementById('status').textContent = 'Calling joinRoom with code=' + code + ', name=' + name;
+    var result = await SocketSync.joinRoom(code, name);
+    document.getElementById('status').textContent = 'SUCCESS: ' + JSON.stringify(result);
+  } catch(e) {
+    document.getElementById('status').textContent = 'ERROR: ' + e.message;
+  }
+}, 500);
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 216, 77, 0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 90, 54, 0.12), transparent 30%),
+    var(--bg-primary);
+  color: var(--text-primary);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.hero {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  color: var(--accent-strong);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(30px, 8vw, 52px);
+  line-height: 0.94;
+  font-weight: 900;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 100%), var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+.btn,
+.btn-ghost,
+.btn-danger {
+  min-height: 52px;
+  border-radius: 999px;
+  width: 100%;
+  padding: 0 18px;
+  font-weight: 700;
+}
+
+.btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+}
+
+.btn:disabled,
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.btn-danger {
+  background: rgba(255, 90, 54, 0.14);
+  border: 1px solid rgba(255, 90, 54, 0.38);
+  color: #ffb1a2;
+}
+
+.field,
+.textarea {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  padding: 14px 16px;
+  outline: none;
+}
+
+.field:focus,
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.toast {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 16, 20, 0.95);
+  border: 1px solid var(--accent);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 999px;
+  z-index: 9999;
+}

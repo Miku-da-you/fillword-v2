@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fillword 主持人端</title>
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/host.css?v=20260503-1">
+</head>
+<body>
+  <div id="app" class="container">
+
+    <section id="page-select" class="page">
+      <header class="header">
+        <h1 class="title">Fillword</h1>
+        <p class="subtitle">多人分工填词，系统一键拼成离谱成品</p>
+      </header>
+      <div id="templateGrid" class="template-grid"></div>
+      <div class="meta-bar">
+        <label class="label">本局人数</label>
+        <select class="field" id="playerCountSelect">
+          <option value="2">2 人</option>
+          <option value="3">3 人</option>
+          <option value="4">4 人</option>
+          <option value="5">5 人</option>
+          <option value="6">6 人</option>
+        </select>
+      </div>
+      <div class="selection-summary" id="selectionSummary">先点一个剧本，再创建房间。</div>
+      <button class="btn" id="createRoomBtn" disabled>请选择剧本</button>
+    </section>
+
+    <section id="page-waiting" class="page" hidden>
+      <header class="header">
+        <h1 class="title">房间号</h1>
+        <p class="subtitle">把这个房间号发给朋友，等他们加入和提交。</p>
+      </header>
+      <div class="room-code-block">
+        <div class="room-code" id="displayRoomCode">----</div>
+        <p class="room-code-hint">等待朋友加入...</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-joined">0</div>
+          <div class="stat-label">已加入</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-target">0</div>
+          <div class="stat-label">目标人数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-submitted">0</div>
+          <div class="stat-label">已提交</div>
+        </div>
+      </div>
+      <div class="players-list" id="playersList"></div>
+      <div class="waiting-actions">
+        <button class="btn btn-primary" id="generateResultBtn" disabled>等待全部提交</button>
+        <button class="btn btn-danger" id="closeRoomBtn">关闭房间</button>
+      </div>
+    </section>
+
+    <section id="page-result" class="page" hidden>
+      <header class="header">
+        <h1 class="title" id="resultTitle">结果</h1>
+      </header>
+      <div class="result-script-block">
+        <p class="result-script" id="resultScript"></p>
+      </div>
+      <div class="result-players" id="resultPlayers"></div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="playAgainBtn">再来一局</button>
+        <button class="btn" id="closeRoomResultBtn">关闭房间</button>
+      </div>
+    </section>
+
+    <div id="errorToast" class="error-toast" hidden></div>
+  </div>
+  <script src="./scripts/shared/templates.js"></script>
+  <script src="./scripts/shared/utils.js"></script>
+  <script src="./scripts/shared/socket.js"></script>
+  <script src="./scripts/pages/host.js?v=20260503-1"></script>
+</body>
+</html>

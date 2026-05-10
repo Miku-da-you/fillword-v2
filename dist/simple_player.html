@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>填词大作战 - 玩家端</title>
+<style>
+:root { --bg-primary: #1a1a2e; --bg-secondary: #16213e; --bg-input: #0f3460; --accent: #e94560; --accent-light: #ff6b6b; --gold: #ffd93d; --text-secondary: #888; --border: #2a2a4a; }
+body { margin: 0; background: var(--bg-primary); color: #fff; font-family: sans-serif; }
+.page { display: none; }
+.page.active { display: block; }
+.page-enter { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--bg-secondary); border-radius: 16px; padding: 28px; margin: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.page-join .code-input { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+.page-join .code-input input { width: 56px; height: 60px; background: var(--bg-input); border: 2px solid var(--accent); border-radius: 12px; color: var(--gold); font-size: 26px; font-weight: bold; text-align: center; letter-spacing: 4px; outline: none; }
+.page-join .code-input input:focus { border-color: var(--accent-light); box-shadow: 0 0 12px rgba(233,69,96,0.4); }
+.name-field { margin-top: 16px; }
+.name-field label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.name-field input { width: 100%; padding: 13px 16px; background: var(--bg-input); border: 2px solid var(--border); border-radius: 10px; color: #fff; font-size: 15px; box-sizing: border-box; outline: none; }
+.name-field input:focus { border-color: var(--accent); }
+.btn { background: var(--accent); color: #fff; border: none; padding: 14px 32px; border-radius: 10px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: all 0.2s; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+#loading { position: fixed; inset: 0; background: var(--bg-primary); display: none; align-items: center; justify-content: center; z-index: 9999; }
+#loading.active { display: flex; }
+</style>
+</head>
+<body>
+
+<div id="page-join" class="page active page-enter page-join">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:20px">
+      <span style="font-size:28px">🎭</span>
+      <span style="font-size:22px;font-weight:bold;color:var(--gold);margin-left:8px">FILLWORD</span>
+    </div>
+    <h2 style="text-align:center;margin:0 0 8px">加入房间</h2>
+    <p style="text-align:center;color:var(--text-secondary);margin:0 0 24px">输入朋友发给你的房间号</p>
+    <div class="code-input">
+      <input type="text" maxlength="1" id="code1" oninput="handleCodeInput(this, 'code2')" onkeydown="handleCodeBack(this, event, 'code1')">
+      <input type="text" maxlength="1" id="code2" oninput="handleCodeInput(this, 'code3')" onkeydown="handleCodeBack(this, event, 'code2')">
+      <input type="text" maxlength="1" id="code3" oninput="handleCodeInput(this, 'code4')" onkeydown="handleCodeBack(this, event, 'code3')">
+      <input type="text" maxlength="1" id="code4" onkeydown="handleCodeBack(this, event, 'code4')">
+    </div>
+    <div class="name-field">
+      <label>你的名字（结果页会显示）</label>
+      <input type="text" id="playerName" placeholder="比如：小明" maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn" onclick="joinRoom()">加入游戏</button>
+  </div>
+</div>
+
+<div id="loading"><div style="text-align:center"><div style="font-size:40px;margin-bottom:16px">⏳</div><div id="loadingText" style="font-size:14px;color:var(--text-secondary)">连接服务器中...</div></div></div>
+
+<script src="scripts/socket.io.min.js"></script>
+<script src="scripts/socket-client.js"></script>
+<script>
+let currentRoomId = null;
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function handleCodeInput(current, nextId) {
+  const val = current.value.toUpperCase();
+  current.value = val;
+  if (val && val.length === 1) {
+    const next = document.getElementById(nextId);
+    if (next) next.focus();
+  }
+}
+
+function handleCodeBack(current, event, currentId) {
+  if (event.key === 'Backspace' && !current.value) {
+    const prevId = { code4: 'code3', code3: 'code2', code2: 'code1' }[currentId];
+    if (prevId) {
+      const prev = document.getElementById(prevId);
+      if (prev) { prev.value = ''; prev.focus(); }
+    }
+  }
+}
+
+function getRoomCode() {
+  return ['code1', 'code2', 'code3', 'code4'].map(id => document.getElementById(id).value).join('').toUpperCase();
+}
+
+async function joinRoom() {
+  const code = getRoomCode();
+  const name = document.getElementById('playerName').value.trim();
+  if (code.length < 4) { showToast('请输入4位房间号'); return; }
+  if (!name) { showToast('请输入你的名字'); return; }
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('loadingText').textContent = '正在加入房间...';
+  try {
+    const result = await SocketSync.joinRoom(code, name);
+    currentRoomId = code;
+    showPage('fill');
+  } catch(e) {
+    document.getElementById('loading').classList.remove('active');
+    showToast('加入失败：' + e.message);
+  }
+}
+</script>
+</body>
+</html>

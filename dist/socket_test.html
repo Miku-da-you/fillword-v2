@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>Socket Test</title></head>
+<body>
+<h1 id="status">Loading...</h1>
+<script src="scripts/socket.io.min.js"></script>
+<script src="scripts/socket-client.js"></script>
+<script>
+setTimeout(function() {
+    var status = document.getElementById('status');
+    if (typeof SocketSync !== 'undefined') {
+        status.textContent = 'SocketSync defined: ' + typeof SocketSync;
+        status.style.color = 'green';
+    } else {
+        status.textContent = 'SocketSync NOT defined - checking SocketIO...';
+        status.style.color = 'red';
+        // Check if socket.io loaded
+        if (typeof io !== 'undefined') {
+            status.textContent += ' | io defined: ' + typeof io;
+        } else {
+            status.textContent += ' | io NOT defined';
+        }
+    }
+}, 2000);
+</script>
+</body>
+</html>

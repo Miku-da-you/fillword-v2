@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fillword Party</title>
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/host.css?v=20260503-2">
+  <link rel="stylesheet" href="./styles/player.css?v=20260503-2">
+  <link rel="stylesheet" href="./styles/result.css?v=20260503-2">
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <section id="page-landing" class="page">
+      <header class="hero">
+        <div class="eyebrow">Fillword Party</div>
+        <h1 class="title">朋友到齐<br>好戏开场</h1>
+        <p class="subtitle">选好玩法，叫上朋友，今晚这一局就从这里开始。</p>
+      </header>
+
+      <div class="card stack">
+        <button class="btn" id="goCreateBtn">我要开房</button>
+        <button class="btn-ghost" id="goJoinBtn">我要加入</button>
+      </div>
+    </section>
+
+    <section id="page-create" class="page" hidden>
+      <header class="hero">
+        <div class="eyebrow">Create Room</div>
+        <h1 class="title">先选模式<br>再开一局</h1>
+        <p class="subtitle" id="createModeHint">三种模式都从这里建房，玩家随后只需输入房号即可进入对应房间。</p>
+      </header>
+
+      <div class="card stack">
+        <div class="template-grid" id="modeGrid">
+          <button class="template-card mode-card is-selected" data-mode="fillword" type="button">
+            <div class="emoji">📝</div>
+            <div class="name">填词游戏</div>
+            <div class="meta">多人分工填词，房主一键生成结果</div>
+          </button>
+          <button class="template-card mode-card" data-mode="turtle" type="button">
+            <div class="emoji">🐢</div>
+            <div class="name">海龟汤</div>
+            <div class="meta">房主选题后开局，所有人自由提问推理</div>
+          </button>
+          <button class="template-card mode-card" data-mode="ghost" type="button">
+            <div class="emoji">👻</div>
+            <div class="name">恐怖怪谈</div>
+            <div class="meta">房主选故事包开局，所有人阅读推理作答</div>
+          </button>
+        </div>
+
+        <div id="fillwordCreateFields" class="stack">
+          <div id="templateGrid" class="template-grid"></div>
+          <div class="field-group">
+            <label class="label" for="playerCountSelect">本局人数</label>
+            <select class="field" id="playerCountSelect">
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4">4 人</option>
+              <option value="5">5 人</option>
+              <option value="6">6 人</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="turtleCreateFields" class="stack" hidden>
+          <div id="turtleCaseGrid" class="template-grid"></div>
+          <div class="field-group">
+            <label class="label" for="turtlePlayerCountSelect">本局人数</label>
+            <select class="field" id="turtlePlayerCountSelect">
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4">4 人</option>
+              <option value="5">5 人</option>
+              <option value="6">6 人</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="ghostCreateFields" class="stack" hidden>
+          <div id="ghostPackGrid" class="template-grid"></div>
+          <div class="field-group">
+            <label class="label" for="ghostPlayerCountSelect">本局人数</label>
+            <select class="field" id="ghostPlayerCountSelect">
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4">4 人</option>
+              <option value="5">5 人</option>
+              <option value="6">6 人</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="selection-summary" id="selectionSummary">先点一个剧本，再创建房间。</div>
+        <button class="btn" id="createRoomBtn" disabled>请选择剧本</button>
+        <button class="btn-ghost" id="backToLandingBtn">返回</button>
+      </div>
+    </section>
+
+    <section id="page-join" class="page" hidden>
+      <header class="hero">
+        <div class="eyebrow">Join Room</div>
+        <h1 class="title">输入房号<br>立刻入局</h1>
+        <p class="subtitle">玩家和房主重连都从这里进入，同一个入口会自动识别你该看到什么。</p>
+      </header>
+
+      <div class="card stack join-grid">
+        <div class="field-group">
+          <label class="label" for="roomCodeInput">房间号</label>
+          <input class="field code-field" id="roomCodeInput" maxlength="4" autocomplete="off" placeholder="ABCD" autofocus>
+        </div>
+        <div class="field-group">
+          <label class="label" for="playerNameInput">你的名字</label>
+          <input class="field" id="playerNameInput" maxlength="20" autocomplete="off" placeholder="比如：小明">
+        </div>
+        <button class="btn" id="joinBtn">加入游戏</button>
+        <button class="btn-ghost" id="backFromJoinBtn">返回</button>
+      </div>
+    </section>
+
+    <section id="page-room" class="page" hidden>
+      <header class="hero">
+        <div class="eyebrow" id="roomEyebrow">Room</div>
+        <h1 class="title" id="roomTitle">房间进行中</h1>
+        <p class="subtitle" id="roomSubtitle">页面会根据你是房主还是玩家、以及当前模式自动切换内容。</p>
+      </header>
+
+      <div class="card stack">
+        <div class="room-code" id="displayRoomCode">----</div>
+        <div class="stats">
+          <div class="stat-box">
+            <strong id="statJoined">0</strong>
+            <span>已加入</span>
+          </div>
+          <div class="stat-box">
+            <strong id="statTarget">0</strong>
+            <span>目标玩家</span>
+          </div>
+          <div class="stat-box">
+            <strong id="statStatus">waiting</strong>
+            <span>当前状态</span>
+          </div>
+        </div>
+        <div class="player-list" id="playersList"></div>
+        <div class="stack" id="modeContent"></div>
+        <button class="btn" id="primaryActionBtn" hidden></button>
+        <button class="btn-danger" id="dangerActionBtn" hidden></button>
+        <button class="btn-ghost" id="secondaryActionBtn" hidden></button>
+      </div>
+    </section>
+
+    <section id="page-result" class="page" hidden>
+      <header class="hero">
+        <div class="eyebrow">Result</div>
+        <h1 class="title">这一轮结果<br>已经出炉</h1>
+      </header>
+
+      <article class="card result-card">
+        <span class="result-tag" id="resultTag">Fillword</span>
+        <h2 id="resultTitle">结果</h2>
+        <p class="result-script" id="resultScript"></p>
+        <div class="result-players" id="resultPlayers"></div>
+      </article>
+
+      <button class="btn" id="backToLandingResultBtn">返回首页</button>
+    </section>
+
+    <div id="errorToast" class="toast" hidden></div>
+  </main>
+  <script src="../socket.io/socket.io.js"></script>
+  <script src="./scripts/shared/templates.js"></script>
+  <script src="./scripts/shared/utils.js"></script>
+  <script src="./scripts/shared/socket.js"></script>
+  <script src="./scripts/shared/client-identity.js"></script>
+  <script src="./scripts/shared/app-socket.js"></script>
+  <script src="./scripts/renderers/fillword-renderer.js"></script>
+  <script src="./scripts/renderers/turtle-renderer.js"></script>
+  <script src="./scripts/renderers/ghost-renderer.js"></script>
+  <script src="./scripts/pages/app.js?v=20260505-ghost-chapter-2"></script>
+</body>
+</html>

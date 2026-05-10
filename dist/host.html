@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>填词大作战 - 主持人端</title>
+<link rel="stylesheet" href="styles/global.css">
+<style>
+.page-waiting .room-display { text-align: center; padding: 10px 0; }
+.room-number-large { font-size: 56px; font-weight: bold; color: var(--gold); letter-spacing: 12px; text-shadow: 0 0 20px rgba(255,217,61,0.3); margin: 16px 0; }
+.room-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+.player-count-bar { background: var(--bg-input); border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.player-count-bar .count { font-size: 28px; font-weight: bold; color: var(--accent-light); }
+.player-count-bar .label { font-size: 13px; color: var(--text-secondary); }
+.result-page .template-badge { display: inline-block; font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 14px; margin-bottom: 10px; }
+.result-page h2 { font-size: 20px; color: var(--gold); }
+.result-page .players-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.result-page .players-tags span { background: var(--bg-input); border-radius: 20px; padding: 5px 14px; font-size: 12px; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<!-- 首页：选择模板 -->
+<div id="page-home" class="page active page-enter">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>填词大作战</h1>
+    <p class="subtitle">创建房间 · 邀请朋友 · 生成离谱剧本</p>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">选择一个剧本模板开始游戏：</p>
+    <div class="template-grid" id="templateList"></div>
+  </div>
+  <div class="card" style="background:transparent;border:none;padding:10px 0">
+    <p style="font-size:12px;color:#555;text-align:center">💡 主持人在这里创建房间，然后把房间号发给朋友</p>
+  </div>
+</div>
+
+<!-- 等待室 -->
+<div id="page-waiting" class="page">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>房间已创建</h1>
+    <p class="subtitle">等待玩家加入...</p>
+  </div>
+  <div class="card page-waiting">
+    <div class="room-display">
+      <p style="font-size:13px;color:var(--text-secondary)">房间号</p>
+      <div class="room-number-large" id="displayRoomCode">----</div>
+      <p class="room-meta">把房间号发给朋友，或让他们扫码加入</p>
+    </div>
+    <div class="player-count-bar">
+      <div><div class="count" id="playerCountNum">0</div><div class="label">人已加入</div></div>
+      <div style="text-align:right"><div class="count" id="submittedCountNum">0</div><div class="label">人已提交</div></div>
+    </div>
+    <div id="playerList" style="margin-bottom:8px"></div>
+    <button class="btn btn-primary" id="generateBtn" onclick="handleGenerate()" disabled>等待玩家提交答案...</button>
+    <button class="btn btn-ghost" onclick="cancelRoom()" style="margin-top:12px;text-align:center;width:100%">取消房间</button>
+  </div>
+</div>
+
+<!-- 结果页 -->
+<div id="page-result" class="page result-page">
+  <div class="page-header">
+    <div class="logo">🎭 FILLWORD</div>
+    <h1>剧本生成完成</h1>
+  </div>
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span class="template-badge" id="resultTemplateName">剧本名称</span>
+      <h2>完整剧本</h2>
+    </div>
+    <div class="result-script" id="resultScript"></div>
+    <div class="players-tags" id="resultPlayers"></div>
+  </div>
+  <div class="share-row">
+    <button class="btn btn-secondary" onclick="shareImage()">📸 保存图片</button>
+    <button class="btn btn-primary" onclick="restartGame()">再来一局</button>
+  </div>
+</div>
+
+<!-- 加载中 -->
+<div id="loading" style="position:fixed;inset:0;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">⏳</div>
+    <div style="font-size:14px;color:var(--text-secondary)">连接服务器中...</div>
+  </div>
+</div>
+
+<script src="scripts/socket-client.js?t=2026050201"></script>
+<script src="scripts/templates.js"></script>
+<script>
+// currentRoomId exposed via SocketSync.currentRoomId
+let currentTemplate = null;
+let currentPlayers = [];
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  renderTemplateList();
+  
+  // 连接 Socket.IO 服务器
+  try {
+    await SocketSync.connect();
+    document.getElementById('loading').style.display = 'none';
+    console.log('已连接到服务器');
+    
+    // 监听玩家加入/提交变化
+    SocketSync.onPlayerJoined(updatePlayers);
+    SocketSync.onPlayerSubmitted(updatePlayers);
+    SocketSync.onPlayerLeft(updatePlayers);
+  } catch(e) {
+    document.getElementById('loading').innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">❌</div>
+        <div style="font-size:14px;color:var(--text-secondary);max-width:280px">${e.message}</div>
+      </div>`;
+  }
+});
+
+function renderTemplateList() {
+  const container = document.getElementById('templateList');
+  container.innerHTML = TEMPLATES.map((t, i) => `
+    <div class="template-card" onclick="selectTemplate(${i})">
+      <span class="emoji">${t.emoji}</span>
+      <div class="name">${t.title}</div>
+      <div class="slots">${t.fields.length}个填空</div>
+    </div>
+  `).join('');
+}
+
+async function selectTemplate(index) {
+  currentTemplate = TEMPLATES[index];
+  
+  try {
+    const result = await SocketSync.createRoom(index);
+    currentRoomId = result.roomId;
+    
+    document.getElementById('displayRoomCode').textContent = currentRoomId;
+    document.getElementById('playerCountNum').textContent = '1';
+    document.getElementById('submittedCountNum').textContent = '0';
+    updatePlayerList([{ id: result.playerId, name: '主持人', submitted: false }]);
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('generateBtn').textContent = '等待玩家加入...';
+    
+    showPage('waiting');
+  } catch(e) {
+    showToast('连接失败：' + e.message);
+  }
+}
+
+function updatePlayers(data) {
+  updatePlayerList(data.players);
+}
+
+function updatePlayerList(players) {
+  currentPlayers = players;
+  const total = players.length;
+  const submitted = players.filter(p => p.submitted).length;
+  
+  document.getElementById('playerCountNum').textContent = total;
+  document.getElementById('submittedCountNum').textContent = submitted;
+  
+  if (total === 0) {
+    document.getElementById('playerList').innerHTML = '<div style="color:#555;font-size:13px;text-align:center;padding:20px">等待玩家加入...</div>';
+  } else {
+    document.getElementById('playerList').innerHTML = players.map(p => `
+      <div class="player-item">
+        <div class="info">
+          <div class="avatar">${p.name[0]}</div>
+          <span class="name">${escapeHtml(p.name)}</span>
+        </div>
+        <span class="badge ${p.submitted ? 'done' : 'waiting'}">${p.submitted ? '✓ 已提交' : '填词中...'}</span>
+      </div>
+    `).join('');
+  }
+  
+  const btn = document.getElementById('generateBtn');
+  if (submitted > 0 && submitted === total && total > 1) {
+    btn.disabled = false;
+    btn.textContent = '✨ 生成剧本';
+  } else if (total > 1) {
+    btn.disabled = true;
+    btn.textContent = submitted > 0 ? `等待其他玩家... (${submitted}/${total})` : '等待玩家提交...';
+  } else {
+    btn.disabled = true;
+    btn.textContent = '等待玩家加入...';
+  }
+}
+
+async function handleGenerate() {
+  if (!currentTemplate) return;
+  
+  const btn = document.getElementById('generateBtn');
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+  
+  try {
+    const { script } = await SocketSync.generateResult();
+    
+    document.getElementById('resultTemplateName').textContent = currentTemplate.title;
+    document.getElementById('resultScript').textContent = script;
+    document.getElementById('resultPlayers').innerHTML = currentPlayers.map(p => 
+      `<span>👤 ${escapeHtml(p.name)}</span>`
+    ).join('');
+    
+    showPage('result');
+  } catch(e) {
+    showToast('生成失败：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '✨ 生成剧本';
+  }
+}
+
+function restartGame() {
+  SocketSync.disconnect();
+  currentRoomId = null;
+  currentTemplate = null;
+  currentPlayers = [];
+  showPage('home');
+  window.location.reload();
+}
+
+async function cancelRoom() {
+  SocketSync.disconnect();
+  restartGame();
+}
+
+async function shareImage() {
+  try {
+    await loadHtml2Canvas();
+    const element = document.getElementById('resultCard');
+    const canvas = await html2canvas(element, { backgroundColor: '#1a1a2e', scale: 2 });
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '填词大作战结果_' + Date.now() + '.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    showToast('图片已保存！');
+  } catch(e) {
+    showToast('截图失败');
+  }
+}
+
+function loadHtml2Canvas() {
+  return new Promise((resolve, reject) => {
+    if (window.html2canvas) { resolve(); return; }
+    const script = document.createElement('script');
+    script.src = 'scripts/html2canvas.min.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+</script>
+<div id="connError" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,68,68,0.95);color:#fff;padding:16px 24px;border-radius:12px;display:none;font-size:14px;z-index:99999;text-align:center;max-width:85%;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+  <div id="connErrorText"></div>
+</div>
+<script>
+window.showConnError = function(msg) {
+  var el = document.getElementById('connError');
+  var txt = document.getElementById('connErrorText');
+  if(el && txt) { txt.textContent = msg; el.style.display = 'block'; setTimeout(function(){ el.style.display='none'; }, 6000); }
+};
+</script>
+</body>
+</html>

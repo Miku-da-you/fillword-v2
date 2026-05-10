@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>填词大作战 - 玩家端</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;color:#fff;font-family:sans-serif;min-height:100vh;padding:20px}
+.page{display:none;padding:20px}
+.page.active{display:block}
+.card{background:#16213e;border-radius:16px;padding:24px;max-width:400px;margin:0 auto}
+h2{text-align:center;color:#ffd93d;margin-bottom:20px}
+input{width:100%;padding:12px;border:2px solid #2a2a4a;border-radius:8px;background:#0f3460;color:#fff;font-size:16px;outline:none;margin-bottom:12px}
+input:focus{border-color:#e94560}
+.code-row{display:flex;gap:10px;margin-bottom:16px}
+.code-row input{width:60px;text-align:center;font-size:24px;font-weight:bold;letter-spacing:4px;color:#ffd93d;text-transform:uppercase}
+.btn{width:100%;padding:14px;background:#e94560;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:8px}
+.btn:active{transform:scale(0.98)}
+label{display:block;font-size:13px;color:#888;margin-bottom:6px}
+#loading{position:fixed;inset:0;background:#1a1a2e;display:none;align-items:center;justify-content:center;z-index:9999}
+#loading.active{display:flex}
+.spinner{width:40px;height:40px;border:4px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#e94560;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999}
+</style>
+</head>
+<body>
+
+<div id="page-join" class="page active">
+  <div class="card">
+    <h2>🎭 FILLWORD</h2>
+    <h2 style="margin-top:0">加入房间</h2>
+    <p style="text-align:center;color:#888;margin-bottom:16px">输入朋友发给你的房间号</p>
+    <div class="code-row">
+      <input type="text" maxlength="1" id="code1" autocomplete="off">
+      <input type="text" maxlength="1" id="code2" autocomplete="off">
+      <input type="text" maxlength="1" id="code3" autocomplete="off">
+      <input type="text" maxlength="1" id="code4" autocomplete="off">
+    </div>
+    <label>你的名字</label>
+    <input type="text" id="playerName" placeholder="比如：小明" maxlength="20" autocomplete="off">
+    <button class="btn" id="joinBtn">加入游戏</button>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div></div>
+
+<script src="scripts/socket.io.min.js"></script>
+<script src="scripts/socket-client.js"></script>
+<script>
+// DOM ready
+document.getElementById('joinBtn').addEventListener('click', function() {
+  var code = ['code1','code2','code3','code4'].map(function(id) { return document.getElementById(id).value; }).join('').toUpperCase();
+  var name = document.getElementById('playerName').value.trim();
+  if (code.length < 4) { alert('请输入4位房间号'); return; }
+  if (!name) { alert('请输入名字'); return; }
+  document.getElementById('loading').classList.add('active');
+  SocketSync.joinRoom(code, name).then(function(result) {
+    document.getElementById('loading').classList.remove('active');
+    alert('加入成功！');
+  }).catch(function(e) {
+    document.getElementById('loading').classList.remove('active');
+    alert('加入失败：' + e.message);
+  });
+});
+</script>
+</body>
+</html>

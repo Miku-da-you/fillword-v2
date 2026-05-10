@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Button Test</title>
+</head>
+<body>
+<input type="text" id="code1" maxlength="1" value="X">
+<input type="text" id="code2" maxlength="1" value="Y">
+<input type="text" id="code3" maxlength="1" value="Z">
+<input type="text" id="code4" maxlength="1" value="W">
+<input type="text" id="playerName" value="TestBot">
+<button onclick="test()">º”»Î”Œœ∑</button>
+<script>
+function test() {
+    var code = document.getElementById('code1').value + document.getElementById('code2').value + document.getElementById('code3').value + document.getElementById('code4').value;
+    var name = document.getElementById('playerName').value;
+    alert('Button works! Code=' + code + ' Name=' + name);
+}
+</script>
+</body>
+</html>

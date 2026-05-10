@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fillword 玩家端</title>
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/player.css?v=20260503-1">
+</head>
+<body>
+  <div id="app" class="container">
+
+    <section id="page-join" class="page">
+      <header class="header">
+        <h1 class="title">输入房号 立刻入局</h1>
+        <p class="subtitle">找主持人要四位房间号，进入游戏。</p>
+      </header>
+      <div class="join-form">
+        <div class="field-group">
+          <label class="label" for="roomCodeInput">房间号</label>
+          <input class="field" id="roomCodeInput" maxlength="4" autocomplete="off" placeholder="ABCD" autofocus>
+        </div>
+        <div class="field-group">
+          <label class="label" for="playerNameInput">你的名字</label>
+          <input class="field" id="playerNameInput" maxlength="20" autocomplete="off" placeholder="比如：小明">
+        </div>
+        <button class="btn btn-primary" id="joinBtn">加入游戏</button>
+      </div>
+    </section>
+
+    <section id="page-fill" class="page" hidden>
+      <header class="header">
+        <h1 class="title" id="templateTitle">填词</h1>
+        <p class="subtitle" id="assignmentHint">你只需要填你分到的这部分。</p>
+      </header>
+      <div class="fields-container" id="fieldsContainer"></div>
+      <button class="btn btn-primary" id="submitBtn">提交答案</button>
+    </section>
+
+    <section id="page-waiting" class="page" hidden>
+      <header class="header">
+        <h1 class="title">等待中</h1>
+        <p class="subtitle" id="waitingHint">已提交，等待主持人出结果...</p>
+      </header>
+      <div class="status-block">
+        <div class="status-icon">&#9203;</div>
+        <p>所有人提交后，主持人会公布结果</p>
+      </div>
+    </section>
+
+    <section id="page-result" class="page" hidden>
+      <header class="header">
+        <h1 class="title" id="resultTitle">结果</h1>
+      </header>
+      <div class="result-script-block">
+        <p class="result-script" id="resultScript"></p>
+      </div>
+      <div class="result-players" id="resultPlayers"></div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="backToJoinBtn">再玩一局</button>
+      </div>
+    </section>
+
+    <div id="errorToast" class="error-toast" hidden></div>
+  </div>
+  <script src="./scripts/shared/templates.js"></script>
+  <script src="./scripts/shared/utils.js"></script>
+  <script src="./scripts/shared/socket.js"></script>
+  <script src="./scripts/pages/player.js?v=20260503-1"></script>
+</body>
+</html>

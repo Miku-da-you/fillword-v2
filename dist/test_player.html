@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>填词大作战 - 玩家端</title>
+<style>
+:root { --bg-primary: #1a1a2e; --accent: #e94560; }
+body { margin: 0; background: var(--bg-primary); color: #fff; font-family: sans-serif; }
+.page { display: none; }
+.page.active { display: block; }
+.card { background: #16213e; border-radius: 12px; padding: 24px; margin: 20px; }
+.btn { background: var(--accent); color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 16px; }
+input { background: #0f3460; border: 2px solid #16213e; color: #fff; padding: 12px; border-radius: 8px; font-size: 18px; width: 80px; text-align: center; text-transform: uppercase; }
+.name-input input { width: 100%; box-sizing: border-box; text-transform: none; }
+</style>
+</head>
+<body>
+
+<div id="page-join" class="page active">
+  <div class="card">
+    <h2>加入房间</h2>
+    <p>输入4位房间号</p>
+    <div class="code-input">
+      <input type="text" maxlength="1" id="code1" oninput="moveFocus(this, 'code2')">
+      <input type="text" maxlength="1" id="code2" oninput="moveFocus(this, 'code3')">
+      <input type="text" maxlength="1" id="code3" oninput="moveFocus(this, 'code4')">
+      <input type="text" maxlength="1" id="code4">
+    </div>
+    <div class="name-input" style="margin-top:16px">
+      <input type="text" id="playerName" placeholder="你的名字" maxlength="20">
+    </div>
+    <button class="btn" onclick="joinRoom()">加入游戏</button>
+  </div>
+</div>
+
+<div id="page-fill" class="page">
+  <div class="card">
+    <h2>房间: <span id="roomCode"></span></h2>
+    <p>已连接！等待主持人开始...</p>
+  </div>
+</div>
+
+<script src="scripts/socket.io.min.js"></script>
+<script src="scripts/socket-client.js"></script>
+<script>
+function moveFocus(current, nextId) {
+  if (current.value.length === 1) {
+    var next = document.getElementById(nextId);
+    if (next) next.focus();
+  }
+}
+
+function getRoomCode() {
+  return ['code1','code2','code3','code4'].map(id => document.getElementById(id).value).join('').toUpperCase();
+}
+
+async function joinRoom() {
+  var code = getRoomCode();
+  var name = document.getElementById('playerName').value.trim();
+  if (code.length < 4) { alert('请输入4位房间号'); return; }
+  if (!name) { alert('请输入名字'); return; }
+  try {
+    var result = await SocketSync.joinRoom(code, name);
+    document.getElementById('roomCode').textContent = code;
+    showPage('fill');
+  } catch(e) {
+    alert('加入失败: ' + e.message);
+  }
+}
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + pageId).classList.add('active');
+}
+</script>
+</body>
+</html>

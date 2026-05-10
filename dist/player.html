@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<title>填词大作战 - 玩家端</title>
+
+<link rel="stylesheet" href="styles/global.css">
+
+<style>
+
+.page-join .code-input { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+
+.page-join .code-input input { width: 56px; height: 60px; background: var(--bg-input); border: 2px solid var(--accent); border-radius: 12px; color: var(--gold); font-size: 26px; font-weight: bold; text-align: center; letter-spacing: 4px; outline: none; }
+
+.page-join .code-input input:focus { border-color: var(--accent-light); box-shadow: 0 0 12px rgba(233,69,96,0.4); }
+
+.name-field { margin-top: 16px; }
+
+.name-field label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+
+.page-fill .template-title { font-size: 16px; color: var(--accent-light); margin-bottom: 4px; }
+
+.page-fill .template-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; }
+
+.page-fill .fill-group { margin-bottom: 16px; }
+
+.page-fill .fill-group label { font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+
+.page-fill .fill-group input { width: 100%; padding: 13px 16px; background: var(--bg-input); border: 2px solid var(--border); border-radius: 10px; color: #fff; font-size: 15px; outline: none; }
+
+.page-fill .fill-group input:focus { border-color: var(--accent); }
+
+.page-fill .fill-group input::placeholder { color: #555; }
+
+.page-result .result-card { background: var(--bg-secondary); border: 2px solid var(--accent); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+
+.page-result .result-card .template-badge { font-size: 12px; color: var(--accent); display: inline-block; border: 1px solid var(--accent); border-radius: 20px; padding: 3px 12px; margin-bottom: 12px; }
+
+.page-result .result-card h2 { font-size: 18px; color: var(--gold); margin-bottom: 16px; }
+
+.page-result .result-script { font-size: 14px; line-height: 2; color: #fff; white-space: pre-wrap; word-break: break-all; }
+
+.page-result .players-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+.page-result .players-section h4 { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+
+.page-result .players-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.page-result .players-tags span { background: var(--bg-input); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-secondary); }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- 页面1：输入房间号 -->
+
+<div id="page-join" class="page active page-enter page-join">
+
+  <div class="page-header">
+
+    <div class="logo">🎭 FILLWORD</div>
+
+    <h1>加入房间</h1>
+
+    <p class="subtitle">输入朋友发给你的房间号</p>
+
+  </div>
+
+  <div class="card">
+
+    <div class="code-input">
+
+      <input type="text" maxlength="1" id="code1" oninput="handleCodeInput(this, 'code2')" onkeydown="handleCodeBack(this, event, 'code1')" autofocus>
+
+      <input type="text" maxlength="1" id="code2" oninput="handleCodeInput(this, 'code3')" onkeydown="handleCodeBack(this, event, 'code2')">
+
+      <input type="text" maxlength="1" id="code3" oninput="handleCodeInput(this, 'code4')" onkeydown="handleCodeBack(this, event, 'code3')">
+
+      <input type="text" maxlength="1" id="code4" onkeydown="handleCodeBack(this, event, 'code4')">
+
+    </div>
+
+    <div class="name-field">
+
+      <label>你的名字（结果页会显示）</label>
+
+      <input type="text" id="playerName" placeholder="比如：小明" maxlength="20" autocomplete="off">
+
+    </div>
+
+    <button class="btn btn-primary" onclick="joinRoom()" style="margin-top:20px">加入游戏</button>
+
+  </div>
+
+</div>
+
+
+
+<!-- 页面2：填词 -->
+
+<div id="page-fill" class="page page-fill">
+
+  <div class="card" style="margin-bottom:16px">
+
+    <div class="template-title" id="templateTitle">剧本名称</div>
+
+    <div class="template-desc">请依次填写以下内容</div>
+
+    <div id="fieldsContainer"></div>
+
+  </div>
+
+  <button class="btn btn-primary" onclick="submitAnswers()">提交答案 ✨</button>
+
+  <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:10px;text-align:center;width:100%">退出房间</button>
+
+</div>
+
+
+
+<!-- 页面3：等待结果 -->
+
+<div id="page-waiting" class="page">
+
+  <div class="card wait-box">
+
+    <span class="spinner">⏳</span>
+
+    <h2>答案已提交！</h2>
+
+    <p id="waitMsg">等待主持人公布结果...</p>
+
+  </div>
+
+  <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:16px;text-align:center;width:100%">退出房间</button>
+
+</div>
+
+
+
+<!-- 页面4：看结果 -->
+
+<div id="page-result" class="page page-result">
+
+  <div class="page-header">
+
+    <div class="logo">🎭 FILLWORD</div>
+
+    <h1>剧本已生成</h1>
+
+  </div>
+
+  <div class="result-card" id="resultCard">
+
+    <span class="template-badge" id="resultTemplateBadge">剧本名称</span>
+
+    <h2>完整剧本</h2>
+
+    <div class="result-script" id="resultScript"></div>
+
+    <div class="players-section">
+
+      <h4>参与玩家</h4>
+
+      <div class="players-tags" id="resultPlayers"></div>
+
+    </div>
+
+  </div>
+
+  <div class="share-row">
+
+    <button class="btn btn-secondary" onclick="shareImage()">📸 保存图片</button>
+
+    <button class="btn btn-primary" onclick="restartGame()">再来一局</button>
+
+  </div>
+
+</div>
+
+
+
+<!-- 页面5：错误 -->
+
+<div id="page-error" class="page">
+
+  <div class="card" style="text-align:center;padding:40px">
+
+    <div style="font-size:48px;margin-bottom:12px">❌</div>
+
+    <h2 style="font-size:17px;margin-bottom:8px">房间号不存在</h2>
+
+    <p style="font-size:13px;color:var(--text-secondary)">请检查房间号是否正确，或联系主持人确认房间已创建</p>
+
+    <button class="btn btn-primary" onclick="showPage('join')" style="margin-top:20px">重新输入</button>
+
+  </div>
+
+</div>
+
+
+
+<!-- 加载中 - 仅在加入房间时显示 -->
+
+<div id="loading" style="position:fixed;inset:0;background:var(--bg-primary);display:none;align-items:center;justify-content:center;z-index:9999">
+
+  <div style="text-align:center">
+
+    <div style="font-size:40px;margin-bottom:16px">⏳</div>
+
+    <div style="font-size:14px;color:var(--text-secondary)" id="loadingText">正在加入房间...</div>
+
+  </div>
+
+</div>
+
+
+
+<script src="scripts/socket-client.js"></script>
+
+<script src="scripts/templates.js"></script>
+
+<script>
+
+// currentRoomId declared in socket-client.js
+let currentTemplate = null;
+
+
+
+function showPage(pageId) {
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  document.getElementById('page-' + pageId).classList.add('active');
+
+}
+
+
+
+function showToast(msg) {
+
+  const existing = document.querySelector('.toast');
+
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+
+  toast.className = 'toast';
+
+  toast.textContent = msg;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 2500);
+
+}
+
+
+
+function escapeHtml(str) {
+
+  const div = document.createElement('div');
+
+  div.textContent = str;
+
+  return div.innerHTML;
+
+}
+
+
+
+function handleCodeInput(current, nextId) {
+
+  const val = current.value.toUpperCase();
+
+  current.value = val;
+
+  if (val && val.length === 1) {
+
+    const next = document.getElementById(nextId);
+
+    if (next) next.focus();
+
+  }
+
+}
+
+
+
+function handleCodeBack(current, e, id) {
+
+  if (e.key === 'Backspace' && current.value === '') {
+
+    const num = parseInt(id.replace('code', ''));
+
+    if (num > 1) {
+
+      const prev = document.getElementById('code' + (num - 1));
+
+      if (prev) prev.focus();
+
+    }
+
+  }
+
+}
+
+
+
+function getRoomCode() {
+
+  return ['code1', 'code2', 'code3', 'code4']
+
+    .map(id => document.getElementById(id).value)
+
+    .join('')
+
+    .toUpperCase();
+
+}
+
+
+
+
+
+async function joinRoom() {
+
+
+  const code = getRoomCode();
+
+  const name = document.getElementById('playerName').value.trim();
+
+  
+
+
+  if (code.length < 4) { showToast('请输入4位房间号'); return; }
+
+  if (!name) { showToast('请输入你的名字'); return; }
+
+  
+
+
+  // 显示加载状态
+
+  document.getElementById('loading').style.display = 'flex';
+
+  document.getElementById('loadingText').textContent = '正在加入房间...';
+
+  
+
+  try {
+
+
+    const result = await SocketSync.joinRoom(code, name);
+
+
+    currentRoomId = code;
+
+    currentTemplate = TEMPLATES[0]; // 从服务器获取实际模板
+
+    
+
+    // 暂时用第一个模板，等服务器确认
+
+    document.getElementById('templateTitle').textContent = currentTemplate.title;
+
+    const container = document.getElementById('fieldsContainer');
+
+    container.innerHTML = currentTemplate.fields.map(f => `
+
+      <div class="fill-group">
+
+        <label>${f.label}</label>
+
+        <input type="text" id="field_${f.key}" placeholder="输入..." autocomplete="off">
+
+      </div>
+
+    `).join('');
+
+    
+
+    showPage('fill');
+
+    document.getElementById('loading').style.display = 'none';
+
+  } catch(e) {
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (e.message === 'ROOM_NOT_FOUND' || e.message.includes('房间')) {
+
+      showToast('房间不存在或已关闭');
+
+    } else {
+
+      showToast('加入失败：' + e.message);
+
+    }
+
+  }
+
+}
+
+
+
+async function submitAnswers() {
+
+  if (!currentTemplate) return;
+
+  
+
+  const answers = {};
+
+  let allFilled = true;
+
+  
+
+  for (const field of currentTemplate.fields) {
+
+    const val = document.getElementById('field_' + field.key).value.trim();
+
+    if (!val) { allFilled = false; break; }
+
+    answers[field.key] = val;
+
+  }
+
+  
+
+  if (!allFilled) { showToast('还有空白没填哦～'); return; }
+
+  
+
+  try {
+
+    await SocketSync.submitAnswers(answers);
+
+    showPage('waiting');
+
+  } catch(e) {
+
+    showToast('提交失败，请重试');
+
+  }
+
+}
+
+
+
+function showResult(data) {
+
+  // 填充剧本
+
+  let script = currentTemplate?.script || '';
+
+  for (const [key, val] of Object.entries(data.answers || {})) {
+
+    script = script.replace(new RegExp('\\{' + key + '\\}', 'g'), val);
+
+  }
+
+  
+
+  if (!script || script === currentTemplate?.script) {
+
+    script = data.script;
+
+  }
+
+  
+
+  document.getElementById('resultTemplateBadge').textContent = currentTemplate?.title || '';
+
+  document.getElementById('resultScript').textContent = script;
+
+  document.getElementById('resultPlayers').innerHTML = (data.players || []).map(n => 
+
+    `<span>👤 ${escapeHtml(n)}</span>`
+
+  ).join('');
+
+  
+
+  showPage('result');
+
+}
+
+
+
+function leaveRoom() {
+
+  SocketSync.disconnect();
+
+  currentRoomId = null;
+
+  currentTemplate = null;
+
+  ['code1','code2','code3','code4'].forEach(id => document.getElementById(id).value = '');
+
+  document.getElementById('playerName').value = '';
+
+  showPage('join');
+
+}
+
+
+
+function restartGame() {
+
+  window.location.reload();
+
+}
+
+
+
+async function shareImage() {
+
+  try {
+
+    if (!window.html2canvas) {
+
+      const script = document.createElement('script');
+
+      script.src = 'scripts/html2canvas.min.js';
+
+      await new Promise((res, rej) => { script.onload = res; script.onerror = rej; document.head.appendChild(script); });
+
+    }
+
+    const canvas = await html2canvas(document.getElementById('resultCard'), { backgroundColor: '#1a1a2e', scale: 2 });
+
+    canvas.toBlob(blob => {
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+
+      a.href = url; a.download = '填词大作战结果_' + Date.now() + '.png'; a.click();
+
+      URL.revokeObjectURL(url);
+
+    });
+
+    showToast('图片已保存！');
+
+  } catch(e) { showToast('截图失败'); }
+
+}
+
+</script>
+
+<div id="connError" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,68,68,0.95);color:#fff;padding:16px 24px;border-radius:12px;display:none;font-size:14px;z-index:99999;text-align:center;max-width:85%;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+
+  <div id="connErrorText"></div>
+
+</div>
+
+<script>
+
+window.showConnError = function(msg) {
+
+  var el = document.getElementById('connError');
+
+  var txt = document.getElementById('connErrorText');
+
+  if(el && txt) { txt.textContent = msg; el.style.display = 'block'; setTimeout(function(){ el.style.display='none'; }, 6000); }
+
+};
+
+</script>
+
+
+
+<script>
+
+window.updateStatus = function(icon, text, detail) {
+
+  var iconEl = document.getElementById('statusIcon');
+
+  var textEl = document.getElementById('statusText');
+
+  var detailEl = document.getElementById('statusDetail');
+
+  if(iconEl) iconEl.textContent = icon;
+
+  if(textEl) textEl.textContent = text;
+
+  if(detailEl && detail) detailEl.textContent = detail;
+
+};
+
+</script>
+
+</body>
+
+</html>
